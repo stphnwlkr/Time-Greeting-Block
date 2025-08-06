@@ -1,0 +1,148 @@
+# Time Greeting Block Plugin
+
+A comprehensive WordPress plugin that provides time-based greetings and date display through Gutenberg blocks, shortcodes, and echo functions.
+
+## Features
+
+- **Gutenberg Block**: Native block editor support with sidebar controls
+- **Shortcode Support**: `[time_greeting]` shortcode with full parameter support
+- **Echo Function**: `time_greeting_echo()` for page builders like Bricks Builder
+- **Customizable Time Periods**: Admin-configurable greeting periods
+- **Accessibility Compliant**: Proper semantic HTML with `<time>` tags and datetime attributes
+- **Internationalization Ready**: Translation-ready with WordPress i18n standards
+- **Security**: Follows WordPress security best practices with proper sanitization
+
+## Installation
+
+1. Create a new folder in `/wp-content/plugins/` called `time-greeting-block`
+2. Copy these files into the plugin folder:
+   ```
+   time-greeting-block/
+   ├── time-greeting-block.php (main plugin file)
+   ├── assets/
+   │   ├── block-editor.js
+   │   └── style.css
+   ├── languages/ (create this folder for translations)
+   └── README.md
+   ```
+3. Activate the plugin in WordPress admin
+
+## File Structure
+
+```
+time-greeting-block/
+├── time-greeting-block.php     # Main plugin file
+├── assets/
+│   ├── block-editor.js         # Gutenberg block JavaScript
+│   └── style.css              # Frontend and editor styles
+├── languages/                  # Translation files (create this folder)
+├── README.md                  # This file
+```
+
+## Usage
+
+### Shortcode Examples
+
+```php
+// Basic greeting
+[time_greeting]
+
+// Show only date
+[time_greeting display="date"]
+
+// Show both greeting and date
+[time_greeting display="both"]
+
+// Custom timezone
+[time_greeting timezone="America/Chicago" tz_abbr="CT"]
+
+// Custom date format
+[time_greeting display="date" date_format="l, F j, Y"]
+```
+
+### Echo Function (for page builders)
+
+```php
+<?php
+// Basic usage
+time_greeting_echo();
+
+// With parameters
+time_greeting_echo(array(
+    'display' => 'both',
+    'timezone' => 'America/Los_Angeles',
+    'tz_abbr' => 'PT'
+));
+?>
+```
+
+### Gutenberg Block
+
+1. Add new block in editor
+2. Search for "Time Greeting"
+3. Configure options in block sidebar:
+   - Display Type: greeting, date, or both
+   - Date Format: PHP date format string
+   - Timezone: PHP timezone identifier
+   - Timezone Abbreviation: Display abbreviation
+
+## Admin Configuration
+
+Go to **Settings → Time Greeting** to configure:
+
+- **Time Periods**: When morning, afternoon, evening, and night begin (24-hour format)
+- **Night Message**: Custom message for after-hours with `{time}` and `{tz}` placeholders
+- **Default Timezone**: Site default timezone (uses WordPress setting by default)
+- **Default Timezone Abbreviation**: Default abbreviation to display
+
+## WordPress Best Practices Compliance
+
+### Security
+- ✅ Proper nonce verification for admin forms
+- ✅ Input sanitization and validation
+- ✅ Output escaping with `esc_html()`, `esc_attr()`, etc.
+- ✅ Capability checks (`manage_options`)
+- ✅ Direct access prevention
+
+### Coding Standards
+- ✅ WordPress Coding Standards compliant
+- ✅ Proper hook usage
+- ✅ Clean plugin architecture
+- ✅ Proper asset enqueuing
+- ✅ Translation-ready strings
+
+### Accessibility
+- ✅ Semantic HTML with `<time>` elements
+- ✅ Proper `datetime` attributes in ISO format
+- ✅ Screen reader friendly markup
+- ✅ ARIA compliance
+
+### Performance
+- ✅ Efficient database queries
+- ✅ Proper asset loading
+- ✅ Server-side rendering for blocks
+- ✅ Minimal resource usage
+
+## Customization
+
+### Default Greeting Periods
+- **Morning**: 5:00 AM - 11:59 AM
+- **Afternoon**: 12:00 PM - 4:59 PM  
+- **Evening**: 5:00 PM - 9:59 PM
+- **Night**: 10:00 PM - 4:59 AM
+
+### Available Parameters
+- `display`: "greeting", "date", "both"
+- `date_format`: Any PHP date format string
+- `timezone`: PHP timezone identifier
+- `tz_abbr`: Timezone abbreviation for display
+
+## Requirements
+
+- WordPress 5.8+
+- PHP 7.4+
+- Modern browser for Gutenberg block
+
+## License
+
+GPL v2 or later

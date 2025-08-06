@@ -1,0 +1,74 @@
+/* Time Greeting Block Styles */
+
+.time-greeting,
+.time-greeting-date {
+    display: inline-block;
+}
+
+.time-greeting time,
+.time-greeting-date time {
+    font-weight: inherit;
+    color: inherit;
+}
+
+/* Block editor specific styles */
+.time-greeting-block-editor {
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #f9f9f9;
+    text-align: center;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.time-greeting-block-editor .time-greeting,
+.time-greeting-block-editor .time-greeting-date {
+    font-size: 16px;
+    line-height: 1.4;
+}
+
+/* Admin page styles */
+.time-greeting-settings .postbox {
+    margin-bottom: 20px;
+}
+
+.time-greeting-settings .postbox h2 {
+    padding: 12px 15px;
+    margin: 0;
+    background: #f1f1f1;
+    border-bottom: 1px solid #ddd;
+}
+
+.time-greeting-settings .inside {
+    padding: 15px;
+}
+
+.time-greeting-settings code {
+    display: block;
+    background: #f0f0f1;
+    padding: 8px 12px;
+    margin: 5px 0 15px 0;
+    border-left: 4px solid #0073aa;
+    font-family: Consolas, Monaco, monospace;
+    font-size: 13px;
+    word-break: break-all;
+}
+
+.time-greeting-settings ul {
+    margin-left: 20px;
+}
+
+.time-greeting-settings li {
+    margin-bottom: 5px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 782px) {
+    .time-greeting-block-editor {
+        padding: 10px;
+        font-size: 14px;
+    }
+}

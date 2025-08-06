@@ -1,0 +1,38 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 2,
+    "name": "time-greeting-block/time-greeting",
+    "version": "1.0.0",
+    "title": "Time Greeting",
+    "category": "widgets",
+    "icon": "clock",
+    "description": "Display time-based greetings and current date with customizable periods.",
+    "keywords": ["time", "greeting", "date", "clock", "calendar"],
+    "supports": {
+        "html": false,
+        "customClassName": true,
+        "className": true,
+        "align": ["left", "center", "right"]
+    },
+    "attributes": {
+        "display": {
+            "type": "string",
+            "default": "greeting"
+        },
+        "dateFormat": {
+            "type": "string",
+            "default": "F j, Y"
+        },
+        "timezone": {
+            "type": "string",
+            "default": ""
+        },
+        "tzAbbr": {
+            "type": "string",
+            "default": ""
+        }
+    },
+    "textdomain": "time-greeting-block",
+    "editorScript": "file:./assets/block-editor.js",
+    "style": "file:./assets/style.css"
+}
