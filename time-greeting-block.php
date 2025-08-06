@@ -3,7 +3,7 @@
  * Plugin Name: Time Greeting Block
  * Plugin URI: https://yourwebsite.com/time-greeting-block
  * Description: A WordPress plugin that provides time-based greetings and date display through Gutenberg blocks, shortcodes, and echo functions.
- * Version: 1.2
+ * Version: 1.3
  * Author: Stephen Walker
  * Author URI: https://flyingw.co
  * License: GPL v2 or later
@@ -631,12 +631,15 @@ class TimeGreetingBlock {
     }
     
     /**
-     * Admin page
+     * Admin page with tabbed interface
      */
     public function admin_page() {
         if (!current_user_can('manage_options')) {
             wp_die(__('You do not have sufficient permissions to access this page.', 'time-greeting-block'));
         }
+        
+        // Get current tab
+        $current_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'settings';
         
         ?>
         <div class="wrap">
@@ -644,80 +647,384 @@ class TimeGreetingBlock {
             
             <?php settings_errors(); ?>
             
-            <div id="poststuff">
-                <div id="post-body" class="metabox-holder columns-2">
-                    <div id="post-body-content">
-                        <form method="post" action="options.php">
-                            <?php
-                            settings_fields('tgb_settings_group');
-                            do_settings_sections('time-greeting-settings');
-                            submit_button();
-                            ?>
-                        </form>
-                        
-                        <div class="postbox">
-                            <h2 class="hndle"><span><?php esc_html_e('Plugin Cleanup', 'time-greeting-block'); ?></span></h2>
-                            <div class="inside">
-                                <p><?php esc_html_e('This plugin automatically cleans up all its data when deactivated or uninstalled. No manual cleanup is required.', 'time-greeting-block'); ?></p>
-                                <p><strong><?php esc_html_e('Data removed on deactivation:', 'time-greeting-block'); ?></strong></p>
-                                <ul>
-                                    <li><?php esc_html_e('Plugin settings and options', 'time-greeting-block'); ?></li>
-                                    <li><?php esc_html_e('Cached timezone data', 'time-greeting-block'); ?></li>
-                                    <li><?php esc_html_e('Any transient data', 'time-greeting-block'); ?></li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
+            <!-- Tab Navigation -->
+            <nav class="nav-tab-wrapper">
+                <a href="<?php echo esc_url(add_query_arg('tab', 'settings', admin_url('options-general.php?page=time-greeting-settings'))); ?>" 
+                   class="nav-tab <?php echo $current_tab === 'settings' ? 'nav-tab-active' : ''; ?>">
+                    <?php esc_html_e('Settings', 'time-greeting-block'); ?>
+                </a>
+                <a href="<?php echo esc_url(add_query_arg('tab', 'styling', admin_url('options-general.php?page=time-greeting-settings'))); ?>" 
+                   class="nav-tab <?php echo $current_tab === 'styling' ? 'nav-tab-active' : ''; ?>">
+                    <?php esc_html_e('Styling & CSS', 'time-greeting-block'); ?>
+                </a>
+            </nav>
+            
+            <div class="tgb-tab-content">
+                <?php if ($current_tab === 'settings'): ?>
+                    <?php $this->render_settings_tab(); ?>
+                <?php elseif ($current_tab === 'styling'): ?>
+                    <?php $this->render_styling_tab(); ?>
+                <?php endif; ?>
+            </div>
+        </div>
+        
+        <style>
+        .tgb-tab-content {
+            margin-top: 20px;
+        }
+        
+        .tgb-css-example {
+            background: #f8f9fa;
+            border-left: 4px solid #0073aa;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: Consolas, Monaco, monospace;
+            font-size: 13px;
+            overflow-x: auto;
+        }
+        
+        .tgb-css-example code {
+            background: none;
+            padding: 0;
+        }
+        
+        .tgb-variables-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        .tgb-variables-table th,
+        .tgb-variables-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        .tgb-variables-table th {
+            background-color: #f1f1f1;
+            font-weight: 600;
+        }
+        
+        .tgb-variables-table code {
+            background: #f0f0f0;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        
+        .tgb-section {
+            background: #fff;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .tgb-section h3 {
+            margin-top: 0;
+            color: #23282d;
+        }
+        
+        .tgb-highlight {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        </style>
+        <?php
+    }
+    
+    /**
+     * Render settings tab content
+     */
+    private function render_settings_tab() {
+        ?>
+        <div id="poststuff">
+            <div id="post-body" class="metabox-holder columns-2">
+                <div id="post-body-content">
+                    <form method="post" action="options.php">
+                        <?php
+                        settings_fields('tgb_settings_group');
+                        do_settings_sections('time-greeting-settings');
+                        submit_button();
+                        ?>
+                    </form>
                     
-                    <div id="postbox-container-1" class="postbox-container">
-                        <div class="postbox">
-                            <h2 class="hndle"><span><?php esc_html_e('Documentation', 'time-greeting-block'); ?></span></h2>
-                            <div class="inside">
-                                <h3><?php esc_html_e('Block Editor', 'time-greeting-block'); ?></h3>
-                                <p><?php esc_html_e('Add the Time Greeting block in the Gutenberg editor under Widgets category.', 'time-greeting-block'); ?></p>
-                                
-                                <h3><?php esc_html_e('Shortcode Usage', 'time-greeting-block'); ?></h3>
-                                <p><strong><?php esc_html_e('Basic greeting:', 'time-greeting-block'); ?></strong></p>
-                                <code>[time_greeting]</code>
-                                
-                                <p><strong><?php esc_html_e('Show date only:', 'time-greeting-block'); ?></strong></p>
-                                <code>[time_greeting display="date"]</code>
-                                
-                                <p><strong><?php esc_html_e('Show both:', 'time-greeting-block'); ?></strong></p>
-                                <code>[time_greeting display="both"]</code>
-                                
-                                <p><strong><?php esc_html_e('Custom timezone:', 'time-greeting-block'); ?></strong></p>
-                                <code>[time_greeting timezone="America/Chicago" tz_abbr="CT"]</code>
-                                
-                                <h3><?php esc_html_e('Echo Function', 'time-greeting-block'); ?></h3>
-                                <p><?php esc_html_e('For page builders like Bricks:', 'time-greeting-block'); ?></p>
-                                <code>&lt;?php time_greeting_echo(); ?&gt;</code>
-                                
-                                <h3><?php esc_html_e('Parameters', 'time-greeting-block'); ?></h3>
-                                <ul>
-                                    <li><strong>display:</strong> "greeting", "date", "both"</li>
-                                    <li><strong>date_format:</strong> <?php esc_html_e('PHP date format', 'time-greeting-block'); ?></li>
-                                    <li><strong>timezone:</strong> <?php esc_html_e('PHP timezone identifier', 'time-greeting-block'); ?></li>
-                                    <li><strong>tz_abbr:</strong> <?php esc_html_e('Timezone abbreviation', 'time-greeting-block'); ?></li>
-                                </ul>
-                            </div>
-                        </div>
-                        
-                        <div class="postbox">
-                            <h2 class="hndle"><span><?php esc_html_e('Current Preview', 'time-greeting-block'); ?></span></h2>
-                            <div class="inside">
-                                <p><strong><?php esc_html_e('Current greeting:', 'time-greeting-block'); ?></strong></p>
-                                <p><?php echo $this->generate_greeting(array('display' => 'greeting')); ?></p>
-                                
-                                <p><strong><?php esc_html_e('Current date:', 'time-greeting-block'); ?></strong></p>
-                                <p><?php echo $this->generate_greeting(array('display' => 'date')); ?></p>
-                                
-                                <p><strong><?php esc_html_e('Both together:', 'time-greeting-block'); ?></strong></p>
-                                <p><?php echo $this->generate_greeting(array('display' => 'both')); ?></p>
-                            </div>
+                    <div class="postbox">
+                        <h2 class="hndle"><span><?php esc_html_e('Plugin Cleanup', 'time-greeting-block'); ?></span></h2>
+                        <div class="inside">
+                            <p><?php esc_html_e('This plugin automatically cleans up all its data when deactivated or uninstalled. No manual cleanup is required.', 'time-greeting-block'); ?></p>
+                            <p><strong><?php esc_html_e('Data removed on deactivation:', 'time-greeting-block'); ?></strong></p>
+                            <ul>
+                                <li><?php esc_html_e('Plugin settings and options', 'time-greeting-block'); ?></li>
+                                <li><?php esc_html_e('Cached timezone data', 'time-greeting-block'); ?></li>
+                                <li><?php esc_html_e('Any transient data', 'time-greeting-block'); ?></li>
+                            </ul>
                         </div>
                     </div>
                 </div>
+                
+                <div id="postbox-container-1" class="postbox-container">
+                    <div class="postbox">
+                        <h2 class="hndle"><span><?php esc_html_e('Usage Documentation', 'time-greeting-block'); ?></span></h2>
+                        <div class="inside">
+                            <h3><?php esc_html_e('Block Editor', 'time-greeting-block'); ?></h3>
+                            <p><?php esc_html_e('Add the Time Greeting block in the Gutenberg editor under Widgets category.', 'time-greeting-block'); ?></p>
+                            
+                            <h3><?php esc_html_e('Shortcode Usage', 'time-greeting-block'); ?></h3>
+                            <p><strong><?php esc_html_e('Basic greeting:', 'time-greeting-block'); ?></strong></p>
+                            <code>[time_greeting]</code>
+                            
+                            <p><strong><?php esc_html_e('Show date only:', 'time-greeting-block'); ?></strong></p>
+                            <code>[time_greeting display="date"]</code>
+                            
+                            <p><strong><?php esc_html_e('Show both:', 'time-greeting-block'); ?></strong></p>
+                            <code>[time_greeting display="both"]</code>
+                            
+                            <p><strong><?php esc_html_e('Custom timezone:', 'time-greeting-block'); ?></strong></p>
+                            <code>[time_greeting timezone="America/Chicago" tz_abbr="CT"]</code>
+                            
+                            <h3><?php esc_html_e('Echo Function', 'time-greeting-block'); ?></h3>
+                            <p><?php esc_html_e('For page builders like Bricks:', 'time-greeting-block'); ?></p>
+                            <code>&lt;?php time_greeting_echo(); ?&gt;</code>
+                            
+                            <h3><?php esc_html_e('Parameters', 'time-greeting-block'); ?></h3>
+                            <ul>
+                                <li><strong>display:</strong> "greeting", "date", "both"</li>
+                                <li><strong>date_format:</strong> <?php esc_html_e('PHP date format', 'time-greeting-block'); ?></li>
+                                <li><strong>timezone:</strong> <?php esc_html_e('PHP timezone identifier', 'time-greeting-block'); ?></li>
+                                <li><strong>tz_abbr:</strong> <?php esc_html_e('Timezone abbreviation', 'time-greeting-block'); ?></li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="postbox">
+                        <h2 class="hndle"><span><?php esc_html_e('Current Preview', 'time-greeting-block'); ?></span></h2>
+                        <div class="inside">
+                            <p><strong><?php esc_html_e('Current greeting:', 'time-greeting-block'); ?></strong></p>
+                            <p><?php echo $this->generate_greeting(array('display' => 'greeting')); ?></p>
+                            
+                            <p><strong><?php esc_html_e('Current date:', 'time-greeting-block'); ?></strong></p>
+                            <p><?php echo $this->generate_greeting(array('display' => 'date')); ?></p>
+                            
+                            <p><strong><?php esc_html_e('Both together:', 'time-greeting-block'); ?></strong></p>
+                            <p><?php echo $this->generate_greeting(array('display' => 'both')); ?></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php
+    }
+    
+    /**
+     * Render styling tab content
+     */
+    private function render_styling_tab() {
+        ?>
+        <div class="tgb-section">
+            <h3><?php esc_html_e('CSS Variables Overview', 'time-greeting-block'); ?></h3>
+            <p><?php esc_html_e('The Time Greeting Block uses CSS Custom Properties (CSS Variables) for easy customization. Override these variables in your theme to customize the appearance.', 'time-greeting-block'); ?></p>
+            
+            <div class="tgb-highlight">
+                <strong><?php esc_html_e('✨ New in v1.0.3:', 'time-greeting-block'); ?></strong> 
+                <?php esc_html_e('Date text is no longer italic by default and has full opacity for better theme integration.', 'time-greeting-block'); ?>
+            </div>
+        </div>
+
+        <div class="tgb-section">
+            <h3><?php esc_html_e('Available CSS Variables', 'time-greeting-block'); ?></h3>
+            <table class="tgb-variables-table">
+                <thead>
+                    <tr>
+                        <th><?php esc_html_e('CSS Variable', 'time-greeting-block'); ?></th>
+                        <th><?php esc_html_e('Default Value', 'time-greeting-block'); ?></th>
+                        <th><?php esc_html_e('Description', 'time-greeting-block'); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>--tgb-font-family</code></td>
+                        <td><code>inherit</code></td>
+                        <td><?php esc_html_e('Font family for the entire block', 'time-greeting-block'); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>--tgb-line-height</code></td>
+                        <td><code>1.4</code></td>
+                        <td><?php esc_html_e('Line height for the block', 'time-greeting-block'); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>--tgb-greeting-font-weight</code></td>
+                        <td><code>500</code></td>
+                        <td><?php esc_html_e('Font weight for greeting text', 'time-greeting-block'); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>--tgb-greeting-margin-right</code></td>
+                        <td><code>0.5em</code></td>
+                        <td><?php esc_html_e('Space after greeting when showing both', 'time-greeting-block'); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>--tgb-date-font-style</code></td>
+                        <td><code>normal</code></td>
+                        <td><?php esc_html_e('Font style for date (normal, italic, etc.)', 'time-greeting-block'); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>--tgb-date-opacity</code></td>
+                        <td><code>1</code></td>
+                        <td><?php esc_html_e('Opacity for date text (0-1)', 'time-greeting-block'); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>--tgb-separator-content</code></td>
+                        <td><code>" "</code></td>
+                        <td><?php esc_html_e('Content between greeting and date', 'time-greeting-block'); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>--tgb-background-padding</code></td>
+                        <td><code>1em</code></td>
+                        <td><?php esc_html_e('Padding when has background', 'time-greeting-block'); ?></td>
+                    </tr>
+                    <tr>
+                        <td><code>--tgb-background-border-radius</code></td>
+                        <td><code>4px</code></td>
+                        <td><?php esc_html_e('Border radius when has background', 'time-greeting-block'); ?></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="tgb-section">
+            <h3><?php esc_html_e('Common Customization Examples', 'time-greeting-block'); ?></h3>
+            
+            <h4><?php esc_html_e('Make Date Text Italic', 'time-greeting-block'); ?></h4>
+            <div class="tgb-css-example">
+<code>.wp-block-time-greeting-block-time-greeting {
+    --tgb-date-font-style: italic;
+}</code>
+            </div>
+            
+            <h4><?php esc_html_e('Bold Greeting Text', 'time-greeting-block'); ?></h4>
+            <div class="tgb-css-example">
+<code>.wp-block-time-greeting-block-time-greeting {
+    --tgb-greeting-font-weight: 700;
+}</code>
+            </div>
+            
+            <h4><?php esc_html_e('Custom Separator', 'time-greeting-block'); ?></h4>
+            <div class="tgb-css-example">
+<code>.wp-block-time-greeting-block-time-greeting {
+    --tgb-separator-content: " • ";
+}</code>
+            </div>
+            
+            <h4><?php esc_html_e('Reduce Date Opacity', 'time-greeting-block'); ?></h4>
+            <div class="tgb-css-example">
+<code>.wp-block-time-greeting-block-time-greeting {
+    --tgb-date-opacity: 0.7;
+}</code>
+            </div>
+            
+            <h4><?php esc_html_e('Custom Font Family', 'time-greeting-block'); ?></h4>
+            <div class="tgb-css-example">
+<code>.wp-block-time-greeting-block-time-greeting {
+    --tgb-font-family: "Helvetica Neue", Arial, sans-serif;
+}</code>
+            </div>
+        </div>
+
+        <div class="tgb-section">
+            <h3><?php esc_html_e('Where to Add Custom CSS', 'time-greeting-block'); ?></h3>
+            
+            <h4><?php esc_html_e('Method 1: Theme Customizer (Recommended)', 'time-greeting-block'); ?></h4>
+            <ol>
+                <li><?php esc_html_e('Go to', 'time-greeting-block'); ?> <strong><?php esc_html_e('Appearance > Customize', 'time-greeting-block'); ?></strong></li>
+                <li><?php esc_html_e('Click', 'time-greeting-block'); ?> <strong><?php esc_html_e('Additional CSS', 'time-greeting-block'); ?></strong></li>
+                <li><?php esc_html_e('Add your custom CSS variables', 'time-greeting-block'); ?></li>
+            </ol>
+            
+            <h4><?php esc_html_e('Method 2: Child Theme', 'time-greeting-block'); ?></h4>
+            <p><?php esc_html_e('Add to your child theme\'s style.css:', 'time-greeting-block'); ?></p>
+            <div class="tgb-css-example">
+<code>/* Time Greeting Block Customizations */
+.wp-block-time-greeting-block-time-greeting {
+    --tgb-date-font-style: italic;
+    --tgb-date-opacity: 0.8;
+}</code>
+            </div>
+            
+            <h4><?php esc_html_e('Method 3: Custom Plugin', 'time-greeting-block'); ?></h4>
+            <p><?php esc_html_e('Create a simple plugin to add custom styles:', 'time-greeting-block'); ?></p>
+            <div class="tgb-css-example">
+<code>&lt;?php
+// Custom Time Greeting Styles
+function my_time_greeting_styles() {
+    wp_add_inline_style('wp-block-library', '
+        .wp-block-time-greeting-block-time-greeting {
+            --tgb-greeting-font-weight: 600;
+            --tgb-date-font-style: italic;
+        }
+    ');
+}
+add_action('wp_enqueue_scripts', 'my_time_greeting_styles');</code>
+            </div>
+        </div>
+
+        <div class="tgb-section">
+            <h3><?php esc_html_e('Advanced Styling Examples', 'time-greeting-block'); ?></h3>
+            
+            <h4><?php esc_html_e('Theme-Specific Variations', 'time-greeting-block'); ?></h4>
+            <div class="tgb-css-example">
+<code>/* Corporate theme */
+.corporate-theme .wp-block-time-greeting-block-time-greeting {
+    --tgb-font-family: "Open Sans", sans-serif;
+    --tgb-greeting-font-weight: 600;
+    --tgb-date-font-style: normal;
+}
+
+/* Creative theme */
+.creative-theme .wp-block-time-greeting-block-time-greeting {
+    --tgb-font-family: "Georgia", serif;
+    --tgb-greeting-font-weight: 400;
+    --tgb-date-font-style: italic;
+    --tgb-separator-content: " ~ ";
+}</code>
+            </div>
+            
+            <h4><?php esc_html_e('Dark Mode Support', 'time-greeting-block'); ?></h4>
+            <div class="tgb-css-example">
+<code>@media (prefers-color-scheme: dark) {
+    .wp-block-time-greeting-block-time-greeting {
+        --tgb-date-opacity: 0.8;
+    }
+}</code>
+            </div>
+            
+            <h4><?php esc_html_e('Mobile Responsive', 'time-greeting-block'); ?></h4>
+            <div class="tgb-css-example">
+<code>@media (max-width: 768px) {
+    .wp-block-time-greeting-block-time-greeting {
+        --tgb-greeting-margin-right: 0;
+        --tgb-mobile-stack-margin-bottom: 0.5em;
+    }
+}</code>
+            </div>
+        </div>
+        
+        <div class="tgb-section">
+            <h3><?php esc_html_e('Live Preview', 'time-greeting-block'); ?></h3>
+            <p><?php esc_html_e('Here\'s how your current settings look:', 'time-greeting-block'); ?></p>
+            
+            <div style="background: #f9f9f9; padding: 20px; border-radius: 4px; margin: 15px 0;">
+                <p><strong><?php esc_html_e('Current greeting:', 'time-greeting-block'); ?></strong></p>
+                <div style="font-size: 18px; margin: 10px 0;"><?php echo $this->generate_greeting(array('display' => 'greeting')); ?></div>
+                
+                <p><strong><?php esc_html_e('Current date:', 'time-greeting-block'); ?></strong></p>
+                <div style="font-size: 18px; margin: 10px 0;"><?php echo $this->generate_greeting(array('display' => 'date')); ?></div>
+                
+                <p><strong><?php esc_html_e('Both together:', 'time-greeting-block'); ?></strong></p>
+                <div style="font-size: 18px; margin: 10px 0;"><?php echo $this->generate_greeting(array('display' => 'both')); ?></div>
             </div>
         </div>
         <?php
