@@ -6,40 +6,40 @@ Transform your WordPress site with greetings that adapt to the time of day. Visi
 [![PHP Version](https://img.shields.io/badge/php-7.4%2B-purple.svg)](https://php.net/)
 [![License](https://img.shields.io/badge/license-GPL--2.0%2B-red.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
 
-## Features
+##Features
 
-- **Dynamic Time-Based Greetings**: Automatically displays different messages based on the current time
-- **Gutenberg Block**: Modern WordPress block with live preview and intuitive controls
-- **Shortcode Support**: Use `[time_greeting]` anywhere on your site
-- **Page Builder Compatible**: Works with Bricks Builder and other page builders
-- **Timezone Aware**: Supports multiple timezones and displays appropriate abbreviations
-- **Date Display**: Show current date alongside greetings in various formats
-- **Fully Customizable**: CSS variables make styling adjustments simple
-- **Accessibility Ready**: Semantic HTML with proper `<time>` elements
-- **Clean Uninstall**: Removes all data when deactivated (good citizen plugin)
-- **No Build Tools**: Ready to use - no npm or compilation required
+**Dynamic Time-Based Greetings**: Automatically displays different messages based on the current time
+**Gutenberg Block**: Modern WordPress block with live preview and intuitive controls
+**Shortcode Support**: Use `[time_greeting]` anywhere on your site
+**Page Builder Compatible**: Works with Bricks Builder and other page builders
+**Timezone Aware**: Supports multiple timezones and displays appropriate abbreviations
+**Date Display**: Show current date alongside greetings in various formats
+**Fully Customizable**: CSS variables make styling adjustments simple
+**Accessibility Ready**: Semantic HTML with proper `<time>` elements
+**Clean Uninstall**: Removes all data when deactivated (good citizen plugin)
+**No Build Tools**: Ready to use no npm or compilation required
 
-## Installation
+##Installation
 
-### From WordPress Admin
+###From WordPress Admin
 1. Navigate to **Plugins > Add New**
 2. Search for "Time Greeting Block"
 3. Install and activate the plugin
 
-### Manual Installation
+###Manual Installation
 1. Download the plugin files
 2. Upload the `time-greeting-block` folder to `/wp-content/plugins/`
 3. Activate the plugin through the WordPress admin
 
-### GitHub Installation
+###GitHub Installation
 ```bash
 cd wp-content/plugins
 git clone https://github.com/your-username/time-greeting-block.git
 ```
 
-## Usage
+##Usage
 
-### Gutenberg Block
+###Gutenberg Block
 
 Add the Time Greeting block through the WordPress block editor:
 
@@ -48,12 +48,12 @@ Add the Time Greeting block through the WordPress block editor:
 3. Configure settings in the sidebar panel
 
 **Block Options:**
-- **Display Type**: Choose greeting, date, or both
-- **Date Format**: Select preset formats or use custom PHP date format
-- **Timezone**: Set specific timezone or use site default
-- **Text Alignment**: Left, center, or right alignment
+**Display Type**: Choose greeting, date, or both
+**Date Format**: Select preset formats or use custom PHP date format
+**Timezone**: Set specific timezone or use site default
+**Text Alignment**: Left, center, or right alignment
 
-### Shortcode
+###Shortcode
 
 Use the shortcode anywhere shortcodes are supported:
 
@@ -74,7 +74,7 @@ Use the shortcode anywhere shortcodes are supported:
 [time_greeting display="date" date_format="l, F j, Y"]
 ```
 
-### Page Builder Integration
+###Page Builder Integration
 
 For Bricks Builder and similar page builders:
 
@@ -82,7 +82,7 @@ For Bricks Builder and similar page builders:
 <?php time_greeting_echo(); ?>
 ```
 
-### Theme Integration
+###Theme Integration
 
 Developers can integrate directly into theme files:
 
@@ -98,33 +98,33 @@ if (function_exists('time_greeting_echo')) {
 ?>
 ```
 
-## Configuration
+##Configuration
 
-### Time Periods
+###Time Periods
 
 Configure when different greetings appear in **Settings > Time Greeting**:
 
-- **Morning**: Default starts at 5:00 AM
-- **Afternoon**: Default starts at 12:00 PM  
-- **Evening**: Default starts at 5:00 PM
-- **Night**: Default starts at 10:00 PM
+**Morning**: Default starts at 5:00 AM
+**Afternoon**: Default starts at 12:00 PM  
+**Evening**: Default starts at 5:00 PM
+**Night**: Default starts at 10:00 PM
 
-### Default Settings
+###Default Settings
 
-- **Default Timezone**: Set site-wide timezone for all greetings
-- **Timezone Abbreviation**: Default abbreviation (e.g., "ET", "PT")
-- **Night Message**: Custom message with `{time}` and `{tz}` placeholders
+**Default Timezone**: Set site-wide timezone for all greetings
+**Timezone Abbreviation**: Default abbreviation (e.g., "ET", "PT")
+**Night Message**: Custom message with `{time}` and `{tz}` placeholders
 
-### Tabbed Admin Interface
+###Tabbed Admin Interface
 
 The settings page includes two tabs:
 
-- **Settings**: Configure time periods and defaults
-- **Styling & CSS**: Comprehensive customization guide with examples
+**Settings**: Configure time periods and defaults
+**Styling & CSS**: Comprehensive customization guide with examples
 
-## Customization
+##Customization
 
-### CSS Variables
+###CSS Variables
 
 The plugin uses CSS custom properties for easy customization:
 
@@ -138,7 +138,7 @@ The plugin uses CSS custom properties for easy customization:
 }
 ```
 
-### Common Customizations
+###Common Customizations
 
 **Make date text italic:**
 ```css
@@ -161,22 +161,22 @@ The plugin uses CSS custom properties for easy customization:
 }
 ```
 
-### Where to Add CSS
+###Where to Add CSS
 
 1. **WordPress Customizer**: Go to Appearance > Customize > Additional CSS
 2. **Child Theme**: Add to your child theme's `style.css`
 3. **Plugin**: Create a simple plugin with `wp_add_inline_style()`
 
-## Screenshots
+##Screenshots
 
 *Screenshots will be added to demonstrate:*
-- Gutenberg block in the editor
-- Block configuration options
-- Frontend greeting display variations
-- Admin settings page
-- Styling customization tab
+Gutenberg block in the editor
+Block configuration options
+Frontend greeting display variations
+Admin settings page
+Styling customization tab
 
-## Directory Structure
+##Directory Structure
 
 ```
 time-greeting-block/
@@ -190,22 +190,22 @@ time-greeting-block/
 └── README.md               # This file
 ```
 
-## Requirements
+##Requirements
 
-- **WordPress**: 6.0 or higher
-- **PHP**: 7.4 or higher
-- **Browser**: Modern browsers with CSS custom properties support
+**WordPress**: 6.0 or higher
+**PHP**: 7.4 or higher
+**Browser**: Modern browsers with CSS custom properties support
 
-## Browser Support
+##Browser Support
 
-- Chrome 49+
-- Firefox 31+
-- Safari 9.1+
-- Edge 16+
+Chrome 49+
+Firefox 31+
+Safari 9.1+
+Edge 16+
 
-## API Reference
+##API Reference
 
-### Shortcode Parameters
+###Shortcode Parameters
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -214,13 +214,13 @@ time-greeting-block/
 | `timezone` | string | Site default | PHP timezone identifier |
 | `tz_abbr` | string | Site default | Timezone abbreviation |
 
-### PHP Functions
+###PHP Functions
 
 **`time_greeting_echo($atts)`**
-- Echoes greeting directly
-- `$atts`: Array of shortcode-style parameters
+Echoes greeting directly
+`$atts`: Array of shortcode-style parameters
 
-## Contributing
+##Contributing
 
 We welcome contributions! Please read our contributing guidelines:
 
@@ -230,71 +230,70 @@ We welcome contributions! Please read our contributing guidelines:
 4. **Push** to the branch (`git push origin feature/amazing-feature`)
 5. **Open** a Pull Request
 
-### Development Setup
+###Development Setup
 
 ```bash
 # Clone the repository
 git clone https://github.com/your-username/time-greeting-block.git
 
-# The plugin is ready to use - no build process required
+# The plugin is ready to use no build process required
 # Just activate in WordPress admin
 ```
 
-## Changelog
+##Changelog
 
-### Version 1.0.3
-- Updated to WordPress Block API v3
-- Added CSS custom properties for easier customization
-- Removed italic styling from date text by default
-- Improved timezone handling with DateTime objects
-- Enhanced admin interface with tabbed layout
-- Added comprehensive styling documentation
+###Version 1.0.3
+Updated to WordPress Block API v3
+Added CSS custom properties for easier customization
+Removed italic styling from date text by default
+Improved timezone handling with DateTime objects
+Enhanced admin interface with tabbed layout
+Added comprehensive styling documentation
 
-### Version 1.0.2
-- Fixed Gutenberg compatibility issues
-- Added server-side rendering for better performance
-- Improved accessibility with semantic HTML
+###Version 1.0.2
+Fixed Gutenberg compatibility issues
+Added server-side rendering for better performance
+Improved accessibility with semantic HTML
 
-### Version 1.0.1
-- Initial public release
-- Basic time greeting functionality
-- Shortcode support
+###Version 1.0.1
+Initial public release
+Basic time greeting functionality
+Shortcode support
 
-## Security
+##Security
 
-### Reporting Security Issues
+###Reporting Security Issues
 
 Please report security vulnerabilities by emailing [security@yourwebsite.com]. Do not create public GitHub issues for security problems.
 
-### Security Features
+###Security Features
 
-- Input sanitization on all user data
-- Nonce protection on admin forms
-- Capability checks for admin functions
-- XSS prevention with proper escaping
+Input sanitization on all user data
+Nonce protection on admin forms
+Capability checks for admin functions
+XSS prevention with proper escaping
 
-## Support
+##Support
 
-- **Documentation**: See the [plugin settings page] for comprehensive guides
-- **Issues**: Report bugs on [GitHub Issues]
-- **WordPress Support**: Post in [WordPress.org forums]
-- **Feature Requests**: Submit via [GitHub Issues] with the `enhancement` label
+**Documentation**: See the [plugin settings page] for comprehensive guides
+**Issues**: Report bugs on [GitHub Issues]
+**WordPress Support**: Post in [WordPress.org forums]
+**Feature Requests**: Submit via [GitHub Issues] with the `enhancement` label
 
-## License
+##License
 
-This project is licensed under the GPL v2 or later - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the GPL v2 or later see the [LICENSE](LICENSE) file for details.
 
-## Credits
+##Credits
 
-- **Author**: Stephen Walker
-- **Website**: [flyingw.co](https://flyingw.co)
-- **Plugin URI**: [https://yourwebsite.com/time-greeting-block]
+**Author**: Stephen Walker
+**Website**: [flyingw.co](https://flyingw.co)
 
-## Acknowledgments
+##Acknowledgments
 
-- WordPress core team for the excellent Block API
-- Contributors who have helped improve the plugin
-- The WordPress community for feedback and support
+WordPress core team for the excellent Block API
+Contributors who have helped improve the plugin
+The WordPress community for feedback and support
 
 ---
 
