@@ -828,11 +828,6 @@ class TimeGreetingBlock {
         <div class="tgb-section">
             <h3><?php esc_html_e('CSS Variables Overview', 'time-greeting-block'); ?></h3>
             <p><?php esc_html_e('The Time Greeting Block uses CSS Custom Properties (CSS Variables) for easy customization. Override these variables in your theme to customize the appearance.', 'time-greeting-block'); ?></p>
-            
-            <div class="tgb-highlight">
-                <strong><?php esc_html_e('✨ New in v1.0.3:', 'time-greeting-block'); ?></strong> 
-                <?php esc_html_e('Date text is no longer italic by default and has full opacity for better theme integration.', 'time-greeting-block'); ?>
-            </div>
         </div>
 
         <div class="tgb-section">
