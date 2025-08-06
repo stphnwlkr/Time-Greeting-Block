@@ -3,7 +3,7 @@
  * Plugin Name: Time Greeting Block
  * Plugin URI: https://yourwebsite.com/time-greeting-block
  * Description: A WordPress plugin that provides time-based greetings and date display through Gutenberg blocks, shortcodes, and echo functions.
- * Version: 1.0.3
+ * Version: 1.1
  * Author: Stephen Walker
  * Author URI: https://flyingw.co
  * License: GPL v2 or later
@@ -11,7 +11,7 @@
  * Text Domain: time-greeting-block
  * Domain Path: /languages
  * Requires at least: 6.0
- * Tested up to: 6.8.2
+ * Tested up to: 6.4
  * Requires PHP: 7.4
  */
 
@@ -19,15 +19,12 @@
 if (!defined('ABSPATH')) {
     exit;
 }
-// Register block using block.json
-add_action('init', function() {
-    register_block_type_from_metadata(__DIR__);
-});
 
 // Define plugin constants
 define('TGB_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('TGB_PLUGIN_PATH', plugin_dir_path(__FILE__));
-define('TGB_PLUGIN_VERSION', '1.0.0');
+define('TGB_PLUGIN_VERSION', '1.0.3');
+define('TGB_OPTION_NAME', 'tgb_settings');
 
 /**
  * Main plugin class
@@ -44,12 +41,10 @@ class TimeGreetingBlock {
         // Register shortcode
         add_shortcode('time_greeting', array($this, 'shortcode_handler'));
         
-        // Register block
-        add_action('init', array($this, 'register_block'));
-        
-        // Plugin activation/deactivation
+        // Plugin activation/deactivation hooks
         register_activation_hook(__FILE__, array($this, 'activate'));
         register_deactivation_hook(__FILE__, array($this, 'deactivate'));
+        register_uninstall_hook(__FILE__, array('TimeGreetingBlock', 'uninstall'));
         
         // Load text domain
         add_action('plugins_loaded', array($this, 'load_textdomain'));
@@ -59,7 +54,12 @@ class TimeGreetingBlock {
      * Initialize plugin
      */
     public function init() {
-        // Additional initialization if needed
+        // Register the block using block.json
+        if (function_exists('register_block_type')) {
+            register_block_type(__DIR__, array(
+                'render_callback' => array($this, 'render_block'),
+            ));
+        }
     }
     
     /**
@@ -67,6 +67,67 @@ class TimeGreetingBlock {
      */
     public function load_textdomain() {
         load_plugin_textdomain('time-greeting-block', false, dirname(plugin_basename(__FILE__)) . '/languages');
+    }
+    
+    /**
+     * Enqueue frontend assets
+     */
+    public function enqueue_frontend_assets() {
+        // Only enqueue if the block is being used or shortcode might be present
+        if (has_block('time-greeting-block/time-greeting') || $this->page_has_shortcode()) {
+            wp_enqueue_style(
+                'time-greeting-block-style',
+                TGB_PLUGIN_URL . 'assets/block-style.css',
+                array(),
+                TGB_PLUGIN_VERSION
+            );
+        }
+    }
+    
+    /**
+     * Enqueue block editor assets
+     */
+    public function enqueue_block_assets() {
+        if (is_admin()) {
+            // Editor JavaScript
+            wp_enqueue_script(
+                'time-greeting-block-editor',
+                TGB_PLUGIN_URL . 'assets/block-editor.js',
+                array(
+                    'wp-blocks',
+                    'wp-element', 
+                    'wp-editor',
+                    'wp-block-editor',
+                    'wp-components',
+                    'wp-i18n',
+                    'wp-server-side-render'
+                ),
+                TGB_PLUGIN_VERSION,
+                true
+            );
+            
+            // Editor CSS
+            wp_enqueue_style(
+                'time-greeting-block-editor-style',
+                TGB_PLUGIN_URL . 'assets/block-editor.css',
+                array('wp-edit-blocks'),
+                TGB_PLUGIN_VERSION
+            );
+            
+            // Localize script for translations
+            wp_set_script_translations('time-greeting-block-editor', 'time-greeting-block');
+        }
+    }
+    
+    /**
+     * Check if current page/post has the shortcode
+     */
+    private function page_has_shortcode() {
+        global $post;
+        if (is_a($post, 'WP_Post') && has_shortcode($post->post_content, 'time_greeting')) {
+            return true;
+        }
+        return false;
     }
     
     /**
@@ -81,17 +142,80 @@ class TimeGreetingBlock {
             'night_start' => 22,
             'night_message' => __("It's {time} {tz} and we're asleep.", 'time-greeting-block'),
             'default_timezone' => get_option('timezone_string') ?: 'America/New_York',
-            'default_tz_abbr' => 'ET'
+            'default_tz_abbr' => 'ET',
+            'plugin_version' => TGB_PLUGIN_VERSION,
+            'activation_date' => current_time('mysql')
         );
         
-        add_option('tgb_settings', $default_options);
+        // Only add options if they don't exist (prevents overwriting on reactivation)
+        if (!get_option(TGB_OPTION_NAME)) {
+            add_option(TGB_OPTION_NAME, $default_options);
+        }
+        
+        // Update version if different
+        $current_options = get_option(TGB_OPTION_NAME, array());
+        if (empty($current_options['plugin_version']) || $current_options['plugin_version'] !== TGB_PLUGIN_VERSION) {
+            $current_options['plugin_version'] = TGB_PLUGIN_VERSION;
+            $current_options['last_updated'] = current_time('mysql');
+            update_option(TGB_OPTION_NAME, $current_options);
+        }
+        
+        // Flush rewrite rules
+        flush_rewrite_rules();
     }
     
     /**
-     * Plugin deactivation
+     * Plugin deactivation - Clean up all data
      */
     public function deactivate() {
-        // Cleanup if needed
+        // Clean up all plugin data
+        $this->cleanup_plugin_data();
+        
+        // Flush rewrite rules
+        flush_rewrite_rules();
+    }
+    
+    /**
+     * Plugin uninstall - Also clean up (in case deactivate didn't run)
+     */
+    public static function uninstall() {
+        // Ensure cleanup runs even if deactivate didn't
+        $instance = new self();
+        $instance->cleanup_plugin_data();
+    }
+    
+    /**
+     * Clean up all plugin data
+     */
+    private function cleanup_plugin_data() {
+        // Remove plugin options
+        delete_option(TGB_OPTION_NAME);
+        
+        // Remove any transients the plugin might have created
+        delete_transient('tgb_timezone_cache');
+        
+        // Remove any user meta related to this plugin
+        delete_metadata('user', 0, 'tgb_user_settings', '', true);
+        
+        // Remove any post meta related to this plugin (if any were added)
+        delete_metadata('post', 0, 'tgb_custom_settings', '', true);
+        
+        // Clean up any scheduled events (if any)
+        wp_clear_scheduled_hook('tgb_daily_cleanup');
+        
+        // Remove any custom database tables (none in this plugin, but good practice)
+        global $wpdb;
+        // Example: $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}tgb_custom_table");
+        
+        // Clear any cached data
+        if (function_exists('wp_cache_delete_group')) {
+            wp_cache_delete_group('time-greeting-block');
+        }
+        
+        // Log cleanup for debugging (remove in production)
+        if (WP_DEBUG) {
+            error_log('Time Greeting Block: Plugin data cleanup completed');
+        }
     }
     
     /**
@@ -108,82 +232,40 @@ class TimeGreetingBlock {
             'default_tz_abbr' => 'ET'
         );
         
-        $settings = get_option('tgb_settings', $defaults);
+        $settings = get_option(TGB_OPTION_NAME, $defaults);
         return wp_parse_args($settings, $defaults);
     }
     
     /**
-     * Enqueue frontend assets
+     * Render block callback for server-side rendering
      */
-    public function enqueue_frontend_assets() {
-        wp_enqueue_style(
-            'time-greeting-block-style',
-            TGB_PLUGIN_URL . 'assets/style.css',
-            array(),
-            TGB_PLUGIN_VERSION
-        );
-    }
-    
-    /**
-     * Enqueue block editor assets
-     */
-    public function enqueue_block_assets() {
-        // Enqueue frontend CSS for both frontend and editor
-        wp_enqueue_style(
-            'time-greeting-block-style',
-            TGB_PLUGIN_URL . 'assets/style.css',
-            array(),
-            TGB_PLUGIN_VERSION
-        );
+    public function render_block($attributes, $content, $block) {
+        // Sanitize and set defaults
+        $attributes = wp_parse_args($attributes, array(
+            'display' => 'greeting',
+            'dateFormat' => 'F j, Y',
+            'timezone' => '',
+            'tzAbbr' => '',
+            'align' => ''
+        ));
         
-        if (is_admin()) {
-            wp_enqueue_script(
-                'time-greeting-block-editor',
-                TGB_PLUGIN_URL . 'assets/block-editor.js',
-                array('wp-blocks', 'wp-element', 'wp-editor', 'wp-components', 'wp-i18n'),
-                TGB_PLUGIN_VERSION,
-                true
-            );
-            
-            // Localize script for translations
-            wp_set_script_translations('time-greeting-block-editor', 'time-greeting-block');
+        // Generate the greeting content
+        $greeting_content = $this->generate_greeting($attributes);
+        
+        if (empty($greeting_content)) {
+            return '';
         }
-    }
-    
-    /**
-     * Register Gutenberg block
-     */
-    public function register_block() {
-        if (function_exists('register_block_type')) {
-            register_block_type('time-greeting-block/time-greeting', array(
-                'render_callback' => array($this, 'render_block'),
-                'attributes' => array(
-                    'display' => array(
-                        'type' => 'string',
-                        'default' => 'greeting'
-                    ),
-                    'dateFormat' => array(
-                        'type' => 'string',
-                        'default' => 'F j, Y'
-                    ),
-                    'timezone' => array(
-                        'type' => 'string',
-                        'default' => ''
-                    ),
-                    'tzAbbr' => array(
-                        'type' => 'string',
-                        'default' => ''
-                    )
-                )
-            ));
-        }
-    }
-    
-    /**
-     * Render block callback
-     */
-    public function render_block($attributes) {
-        return $this->generate_greeting($attributes);
+        
+        // Prepare wrapper attributes
+        $wrapper_attributes = get_block_wrapper_attributes(array(
+            'class' => $attributes['align'] ? 'has-text-align-' . esc_attr($attributes['align']) : ''
+        ));
+        
+        return sprintf(
+            '<div %s>%s</div>',
+            $wrapper_attributes,
+            $greeting_content
+        );
     }
     
     /**
@@ -232,36 +314,55 @@ class TimeGreetingBlock {
             $display = 'greeting';
         }
         
-        // Set timezone
-        $original_timezone = date_default_timezone_get();
-        date_default_timezone_set($timezone);
+        // Validate and sanitize date format
+        $date_format = $this->sanitize_date_format($date_format);
+        
+        // Validate timezone
+        if (!in_array($timezone, timezone_identifiers_list())) {
+            $timezone = $settings['default_timezone'];
+        }
+        
+        // Create DateTime object with specified timezone
+        try {
+            $datetime = new DateTime('now', new DateTimeZone($timezone));
+        } catch (Exception $e) {
+            // Fallback to default timezone if there's an error
+            try {
+                $datetime = new DateTime('now', new DateTimeZone($settings['default_timezone']));
+                $timezone = $settings['default_timezone'];
+            } catch (Exception $e2) {
+                // Final fallback to server timezone
+                $datetime = new DateTime();
+                $timezone = date_default_timezone_get();
+            }
+        }
         
         $output = '';
         
-        try {
-            // Generate greeting if needed
-            if ($display === 'greeting' || $display === 'both') {
-                $greeting = $this->get_time_greeting($tz_abbr, $settings);
-                $current_time = date('c'); // ISO 8601 format for datetime attribute
-                
-                // Wrap in semantic HTML with accessibility
-                $output .= sprintf(
-                    '<span class="time-greeting" data-timezone="%s"><time datetime="%s">%s</time></span>',
-                    esc_attr($timezone),
-                    esc_attr($current_time),
-                    esc_html($greeting)
-                );
-            }
+        // Generate greeting if needed
+        if ($display === 'greeting' || $display === 'both') {
+            $greeting = $this->get_time_greeting($datetime, $tz_abbr, $settings);
+            $current_time = $datetime->format('c'); // ISO 8601 format for datetime attribute
             
-            // Add separator if showing both
-            if ($display === 'both') {
-                $output .= ' ';
-            }
-            
-            // Generate date if needed
-            if ($display === 'date' || $display === 'both') {
-                $current_date = date($date_format);
-                $iso_date = date('Y-m-d'); // ISO format for datetime attribute
+            // Wrap in semantic HTML with accessibility
+            $output .= sprintf(
+                '<span class="time-greeting" data-timezone="%s"><time datetime="%s">%s</time></span>',
+                esc_attr($timezone),
+                esc_attr($current_time),
+                esc_html($greeting)
+            );
+        }
+        
+        // Add separator if showing both
+        if ($display === 'both') {
+            $output .= ' ';
+        }
+        
+        // Generate date if needed
+        if ($display === 'date' || $display === 'both') {
+            try {
+                $current_date = $datetime->format($date_format);
+                $iso_date = $datetime->format('Y-m-d'); // ISO format for datetime attribute
                 
                 if ($display === 'date') {
                     $output = sprintf(
@@ -277,21 +378,38 @@ class TimeGreetingBlock {
                         esc_html($current_date)
                     );
                 }
+            } catch (Exception $e) {
+                // If date formatting fails, skip the date part
+                if ($display === 'date') {
+                    $output = '<span class="time-greeting-date">' . esc_html__('Date unavailable', 'time-greeting-block') . '</span>';
+                }
             }
-        } finally {
-            // Restore original timezone
-            date_default_timezone_set($original_timezone);
         }
         
         return $output;
     }
     
     /**
-     * Get time-based greeting
+     * Sanitize date format to prevent code execution
      */
-    private function get_time_greeting($tz_abbr, $settings) {
-        $hour = (int)date('H');
-        $current_time = date('g:i A');
+    private function sanitize_date_format($format) {
+        // Allow only safe date format characters
+        $safe_format = preg_replace('/[^a-zA-Z0-9\s\-\/\\\:,.\s]/', '', $format);
+        
+        // Ensure we have a valid format
+        if (empty($safe_format)) {
+            return 'F j, Y'; // Default format
+        }
+        
+        return $safe_format;
+    }
+    
+    /**
+     * Get time-based greeting using DateTime object
+     */
+    private function get_time_greeting($datetime, $tz_abbr, $settings) {
+        $hour = (int)$datetime->format('H');
+        $current_time = $datetime->format('g:i A');
         
         if ($hour >= $settings['morning_start'] && $hour < $settings['afternoon_start']) {
             return __('Good morning!', 'time-greeting-block');
@@ -303,7 +421,7 @@ class TimeGreetingBlock {
             // Replace placeholders in night message
             $night_message = $settings['night_message'];
             $night_message = str_replace('{time}', $current_time, $night_message);
-            $night_message = str_replace('{tz}', $tz_abbr, $night_message);
+            $night_message = str_replace('{tz}', esc_html($tz_abbr), $night_message);
             return $night_message;
         }
     }
@@ -327,7 +445,7 @@ class TimeGreetingBlock {
     public function admin_init() {
         register_setting(
             'tgb_settings_group',
-            'tgb_settings',
+            TGB_OPTION_NAME,
             array($this, 'sanitize_settings')
         );
         
@@ -338,41 +456,23 @@ class TimeGreetingBlock {
             'time-greeting-settings'
         );
         
-        add_settings_field(
-            'morning_start',
-            __('Morning starts at (24-hour)', 'time-greeting-block'),
-            array($this, 'number_field_callback'),
-            'time-greeting-settings',
-            'tgb_main_section',
-            array('field' => 'morning_start', 'min' => 0, 'max' => 23)
+        $fields = array(
+            'morning_start' => __('Morning starts at (24-hour)', 'time-greeting-block'),
+            'afternoon_start' => __('Afternoon starts at (24-hour)', 'time-greeting-block'),
+            'evening_start' => __('Evening starts at (24-hour)', 'time-greeting-block'),
+            'night_start' => __('Night/Late hours start at (24-hour)', 'time-greeting-block')
         );
         
-        add_settings_field(
-            'afternoon_start',
-            __('Afternoon starts at (24-hour)', 'time-greeting-block'),
-            array($this, 'number_field_callback'),
-            'time-greeting-settings',
-            'tgb_main_section',
-            array('field' => 'afternoon_start', 'min' => 0, 'max' => 23)
-        );
-        
-        add_settings_field(
-            'evening_start',
-            __('Evening starts at (24-hour)', 'time-greeting-block'),
-            array($this, 'number_field_callback'),
-            'time-greeting-settings',
-            'tgb_main_section',
-            array('field' => 'evening_start', 'min' => 0, 'max' => 23)
-        );
-        
-        add_settings_field(
-            'night_start',
-            __('Night/Late hours start at (24-hour)', 'time-greeting-block'),
-            array($this, 'number_field_callback'),
-            'time-greeting-settings',
-            'tgb_main_section',
-            array('field' => 'night_start', 'min' => 0, 'max' => 23)
-        );
+        foreach ($fields as $field => $label) {
+            add_settings_field(
+                $field,
+                $label,
+                array($this, 'number_field_callback'),
+                'time-greeting-settings',
+                'tgb_main_section',
+                array('field' => $field, 'min' => 0, 'max' => 23)
+            );
+        }
         
         add_settings_field(
             'night_message',
@@ -414,7 +514,14 @@ class TimeGreetingBlock {
      */
     public function sanitize_settings($input) {
         $sanitized = array();
+        $current_settings = get_option(TGB_OPTION_NAME, array());
         
+        // Preserve existing data that shouldn't be overwritten
+        $sanitized['plugin_version'] = $current_settings['plugin_version'] ?? TGB_PLUGIN_VERSION;
+        $sanitized['activation_date'] = $current_settings['activation_date'] ?? current_time('mysql');
+        $sanitized['last_updated'] = current_time('mysql');
+        
+        // Sanitize user inputs
         $sanitized['morning_start'] = intval($input['morning_start'] ?? 5);
         $sanitized['afternoon_start'] = intval($input['afternoon_start'] ?? 12);
         $sanitized['evening_start'] = intval($input['evening_start'] ?? 17);
@@ -426,10 +533,20 @@ class TimeGreetingBlock {
         // Validate hour ranges
         foreach (array('morning_start', 'afternoon_start', 'evening_start', 'night_start') as $field) {
             if ($sanitized[$field] < 0 || $sanitized[$field] > 23) {
-                add_settings_error('tgb_settings', $field, 
+                add_settings_error(TGB_OPTION_NAME, $field, 
                     sprintf(__('%s must be between 0 and 23.', 'time-greeting-block'), 
                     ucfirst(str_replace('_', ' ', $field))));
+                // Reset to default
+                $defaults = array('morning_start' => 5, 'afternoon_start' => 12, 'evening_start' => 17, 'night_start' => 22);
+                $sanitized[$field] = $defaults[$field];
             }
+        }
+        
+        // Validate timezone
+        if (!empty($sanitized['default_timezone']) && !in_array($sanitized['default_timezone'], timezone_identifiers_list())) {
+            add_settings_error(TGB_OPTION_NAME, 'default_timezone', 
+                __('Invalid timezone identifier.', 'time-greeting-block'));
+            $sanitized['default_timezone'] = get_option('timezone_string') ?: 'America/New_York';
         }
         
         return $sanitized;
@@ -456,11 +573,12 @@ class TimeGreetingBlock {
         $max = $args['max'] ?? 100;
         
         printf(
-            '<input type="number" id="%1$s" name="tgb_settings[%1$s]" value="%2$s" min="%3$s" max="%4$s" class="small-text" />',
+            '<input type="number" id="%1$s" name="%5$s[%1$s]" value="%2$s" min="%3$s" max="%4$s" class="small-text" />',
             esc_attr($args['field']),
             esc_attr($value),
             esc_attr($min),
-            esc_attr($max)
+            esc_attr($max),
+            TGB_OPTION_NAME
         );
     }
     
@@ -469,9 +587,10 @@ class TimeGreetingBlock {
         $value = $settings[$args['field']];
         
         printf(
-            '<input type="text" id="%1$s" name="tgb_settings[%1$s]" value="%2$s" class="regular-text" />',
+            '<input type="text" id="%1$s" name="%3$s[%1$s]" value="%2$s" class="regular-text" />',
             esc_attr($args['field']),
-            esc_attr($value)
+            esc_attr($value),
+            TGB_OPTION_NAME
         );
     }
     
@@ -480,9 +599,10 @@ class TimeGreetingBlock {
         $value = $settings[$args['field']];
         
         printf(
-            '<textarea id="%1$s" name="tgb_settings[%1$s]" rows="3" cols="50" class="large-text">%2$s</textarea>',
+            '<textarea id="%1$s" name="%3$s[%1$s]" rows="3" cols="50" class="large-text">%2$s</textarea>',
             esc_attr($args['field']),
-            esc_textarea($value)
+            esc_textarea($value),
+            TGB_OPTION_NAME
         );
         
         if ($args['field'] === 'night_message') {
@@ -497,7 +617,7 @@ class TimeGreetingBlock {
         $current_value = $settings[$args['field']];
         $timezones = timezone_identifiers_list();
         
-        printf('<select id="%1$s" name="tgb_settings[%1$s]">', esc_attr($args['field']));
+        printf('<select id="%1$s" name="%2$s[%1$s]">', esc_attr($args['field']), TGB_OPTION_NAME);
         
         foreach ($timezones as $timezone) {
             printf(
@@ -522,6 +642,8 @@ class TimeGreetingBlock {
         <div class="wrap">
             <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
             
+            <?php settings_errors(); ?>
+            
             <div id="poststuff">
                 <div id="post-body" class="metabox-holder columns-2">
                     <div id="post-body-content">
@@ -532,12 +654,28 @@ class TimeGreetingBlock {
                             submit_button();
                             ?>
                         </form>
+                        
+                        <div class="postbox">
+                            <h2 class="hndle"><span><?php esc_html_e('Plugin Cleanup', 'time-greeting-block'); ?></span></h2>
+                            <div class="inside">
+                                <p><?php esc_html_e('This plugin automatically cleans up all its data when deactivated or uninstalled. No manual cleanup is required.', 'time-greeting-block'); ?></p>
+                                <p><strong><?php esc_html_e('Data removed on deactivation:', 'time-greeting-block'); ?></strong></p>
+                                <ul>
+                                    <li><?php esc_html_e('Plugin settings and options', 'time-greeting-block'); ?></li>
+                                    <li><?php esc_html_e('Cached timezone data', 'time-greeting-block'); ?></li>
+                                    <li><?php esc_html_e('Any transient data', 'time-greeting-block'); ?></li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
                     
                     <div id="postbox-container-1" class="postbox-container">
                         <div class="postbox">
                             <h2 class="hndle"><span><?php esc_html_e('Documentation', 'time-greeting-block'); ?></span></h2>
                             <div class="inside">
+                                <h3><?php esc_html_e('Block Editor', 'time-greeting-block'); ?></h3>
+                                <p><?php esc_html_e('Add the Time Greeting block in the Gutenberg editor under Widgets category.', 'time-greeting-block'); ?></p>
+                                
                                 <h3><?php esc_html_e('Shortcode Usage', 'time-greeting-block'); ?></h3>
                                 <p><strong><?php esc_html_e('Basic greeting:', 'time-greeting-block'); ?></strong></p>
                                 <code>[time_greeting]</code>
@@ -553,7 +691,7 @@ class TimeGreetingBlock {
                                 
                                 <h3><?php esc_html_e('Echo Function', 'time-greeting-block'); ?></h3>
                                 <p><?php esc_html_e('For page builders like Bricks:', 'time-greeting-block'); ?></p>
-                                <code>&lt;?php echo time_greeting_echo(); ?&gt;</code>
+                                <code>&lt;?php time_greeting_echo(); ?&gt;</code>
                                 
                                 <h3><?php esc_html_e('Parameters', 'time-greeting-block'); ?></h3>
                                 <ul>
@@ -573,6 +711,9 @@ class TimeGreetingBlock {
                                 
                                 <p><strong><?php esc_html_e('Current date:', 'time-greeting-block'); ?></strong></p>
                                 <p><?php echo $this->generate_greeting(array('display' => 'date')); ?></p>
+                                
+                                <p><strong><?php esc_html_e('Both together:', 'time-greeting-block'); ?></strong></p>
+                                <p><?php echo $this->generate_greeting(array('display' => 'both')); ?></p>
                             </div>
                         </div>
                     </div>
@@ -590,10 +731,9 @@ new TimeGreetingBlock();
  * Echo function for external use (Bricks Builder, etc.)
  */
 function time_greeting_echo($atts = array()) {
-    global $time_greeting_plugin;
     if (class_exists('TimeGreetingBlock')) {
         $plugin = new TimeGreetingBlock();
-        echo $plugin->shortcode_handler($atts);
+        $plugin->echo_greeting($atts);
     }
 }
 ?>

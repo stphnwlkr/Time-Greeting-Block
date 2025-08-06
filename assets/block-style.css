@@ -1,0 +1,167 @@
+/**
+ * Frontend styles for Time Greeting Block
+ */
+
+.wp-block-time-greeting-block-time-greeting {
+    /* CSS Custom Properties for easy customization */
+    --tgb-font-family: inherit;
+    --tgb-line-height: 1.4;
+    --tgb-greeting-font-weight: 500;
+    --tgb-greeting-margin-right: 0.5em;
+    --tgb-date-font-style: normal;
+    --tgb-date-opacity: 1;
+    --tgb-separator-content: " ";
+    --tgb-background-padding: 1em;
+    --tgb-background-border-radius: 4px;
+    --tgb-mobile-stack-margin-bottom: 0.25em;
+    
+    /* Base styling */
+    font-family: var(--tgb-font-family);
+    line-height: var(--tgb-line-height);
+}
+
+.wp-block-time-greeting-block-time-greeting .time-greeting,
+.wp-block-time-greeting-block-time-greeting .time-greeting-date {
+    display: inline;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+}
+
+.wp-block-time-greeting-block-time-greeting .time-greeting {
+    font-weight: var(--tgb-greeting-font-weight);
+    margin-right: var(--tgb-greeting-margin-right);
+}
+
+.wp-block-time-greeting-block-time-greeting .time-greeting time {
+    font-weight: inherit;
+}
+
+.wp-block-time-greeting-block-time-greeting .time-greeting-date {
+    font-style: var(--tgb-date-font-style);
+    opacity: var(--tgb-date-opacity);
+}
+
+.wp-block-time-greeting-block-time-greeting .time-greeting-date time {
+    font-style: inherit;
+}
+
+/* When showing both greeting and date */
+.wp-block-time-greeting-block-time-greeting .time-greeting + .time-greeting-date::before {
+    content: var(--tgb-separator-content);
+}
+
+/* Alignment support */
+.wp-block-time-greeting-block-time-greeting.has-text-align-left {
+    text-align: left;
+}
+
+.wp-block-time-greeting-block-time-greeting.has-text-align-center {
+    text-align: center;
+}
+
+.wp-block-time-greeting-block-time-greeting.has-text-align-right {
+    text-align: right;
+}
+
+/* Wide and full alignment support */
+.wp-block-time-greeting-block-time-greeting.alignwide {
+    max-width: var(--wp--style--global--wide-size, 1280px);
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.wp-block-time-greeting-block-time-greeting.alignfull {
+    max-width: none;
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+}
+
+/* Theme integration */
+.wp-block-time-greeting-block-time-greeting.has-background {
+    padding: var(--tgb-background-padding);
+    border-radius: var(--tgb-background-border-radius);
+}
+
+/* Color support */
+.wp-block-time-greeting-block-time-greeting.has-text-color {
+    color: var(--wp--preset--color--foreground, inherit);
+}
+
+.wp-block-time-greeting-block-time-greeting.has-background {
+    background-color: var(--wp--preset--color--background, transparent);
+}
+
+/* Typography support */
+.wp-block-time-greeting-block-time-greeting.has-small-font-size {
+    font-size: var(--wp--preset--font-size--small, 0.875em);
+}
+
+.wp-block-time-greeting-block-time-greeting.has-medium-font-size {
+    font-size: var(--wp--preset--font-size--medium, 1.25em);
+}
+
+.wp-block-time-greeting-block-time-greeting.has-large-font-size {
+    font-size: var(--wp--preset--font-size--large, 2.25em);
+}
+
+.wp-block-time-greeting-block-time-greeting.has-x-large-font-size {
+    font-size: var(--wp--preset--font-size--x-large, 3em);
+}
+
+/* Spacing support */
+.wp-block-time-greeting-block-time-greeting[style*="margin"] {
+    box-sizing: border-box;
+}
+
+.wp-block-time-greeting-block-time-greeting[style*="padding"] {
+    box-sizing: border-box;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .wp-block-time-greeting-block-time-greeting.is-style-mobile-stack .time-greeting,
+    .wp-block-time-greeting-block-time-greeting.is-style-mobile-stack .time-greeting-date {
+        display: block;
+    }
+    
+    .wp-block-time-greeting-block-time-greeting.is-style-mobile-stack .time-greeting {
+        margin-right: 0;
+        margin-bottom: var(--tgb-mobile-stack-margin-bottom);
+    }
+
+    .wp-block-time-greeting-block-time-greeting.alignfull {
+        padding-left: var(--tgb-background-padding);
+        padding-right: var(--tgb-background-padding);
+    }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+    .wp-block-time-greeting-block-time-greeting * {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .wp-block-time-greeting-block-time-greeting {
+        --tgb-date-opacity: 1;
+    }
+    
+    .wp-block-time-greeting-block-time-greeting.has-background {
+        border: 1px solid;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .wp-block-time-greeting-block-time-greeting:not(.has-text-color):not(.has-background) {
+        color: inherit;
+    }
+}
