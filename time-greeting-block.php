@@ -3,7 +3,7 @@
  * Plugin Name: Time Greeting Block
  * Plugin URI: https://yourwebsite.com/time-greeting-block
  * Description: A WordPress plugin that provides time-based greetings and date display through Gutenberg blocks, shortcodes, and echo functions.
- * Version: 1.1
+ * Version: 1.2
  * Author: Stephen Walker
  * Author URI: https://flyingw.co
  * License: GPL v2 or later
