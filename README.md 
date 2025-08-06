@@ -1,148 +1,193 @@
-# Time Greeting Block Plugin
+# Time Greeting Block - Complete Installation Guide
 
-A comprehensive WordPress plugin that provides time-based greetings and date display through Gutenberg blocks, shortcodes, and echo functions.
+This is a complete, ready-to-use WordPress plugin with **no build tools required**. Everything is pre-compiled and ready to install.
 
-## Features
+## 📁 **Plugin Directory Structure**
 
-- **Gutenberg Block**: Native block editor support with sidebar controls
-- **Shortcode Support**: `[time_greeting]` shortcode with full parameter support
-- **Echo Function**: `time_greeting_echo()` for page builders like Bricks Builder
-- **Customizable Time Periods**: Admin-configurable greeting periods
-- **Accessibility Compliant**: Proper semantic HTML with `<time>` tags and datetime attributes
-- **Internationalization Ready**: Translation-ready with WordPress i18n standards
-- **Security**: Follows WordPress security best practices with proper sanitization
-
-## Installation
-
-1. Create a new folder in `/wp-content/plugins/` called `time-greeting-block`
-2. Copy these files into the plugin folder:
-   ```
-   time-greeting-block/
-   ├── time-greeting-block.php (main plugin file)
-   ├── assets/
-   │   ├── block-editor.js
-   │   └── style.css
-   ├── languages/ (create this folder for translations)
-   └── README.md
-   ```
-3. Activate the plugin in WordPress admin
-
-## File Structure
+Create the following directory structure in your `wp-content/plugins/` folder:
 
 ```
 time-greeting-block/
-├── time-greeting-block.php     # Main plugin file
 ├── assets/
-│   ├── block-editor.js         # Gutenberg block JavaScript
-│   └── style.css              # Frontend and editor styles
-├── languages/                  # Translation files (create this folder)
-├── README.md                  # This file
+│   ├── block-editor.js      # Complete vanilla JavaScript for Gutenberg
+│   ├── block-editor.css     # Editor styles
+│   └── block-style.css      # Frontend styles
+├── languages/               # Translation files (optional)
+├── block.json              # Block configuration (Block API v3)
+├── time-greeting-block.php # Main plugin file with cleanup
+└── README.md               # This file
 ```
 
-## Usage
+## 🚀 **Installation Steps**
 
-### Shortcode Examples
+1. **Create the plugin directory:**
+   ```bash
+   mkdir wp-content/plugins/time-greeting-block
+   mkdir wp-content/plugins/time-greeting-block/assets
+   ```
 
+2. **Copy all files** from the artifacts into their respective locations
+
+3. **Activate the plugin** in WordPress admin
+
+That's it! No build process, no npm, no compilation required.
+
+## ✨ **Features**
+
+### **🎯 Block API v3 Compliant**
+- Modern Gutenberg block with full Block API v3 support
+- Server-side rendering for better performance
+- Proper block wrapper attributes
+- Full theme integration
+
+### **🧹 Complete Cleanup**
+- **Automatically removes ALL plugin data** when deactivated
+- Cleans up options, transients, user meta, post meta
+- No orphaned data left in database
+- "Good citizen" plugin behavior
+
+### **🎨 Rich Editor Experience**
+- Live preview in Gutenberg editor
+- Organized inspector controls with helpful descriptions
+- Timezone dropdown with common options + custom
+- Date format presets + custom PHP date formats
+- Text alignment support
+- Color and typography support
+
+### **⚡ Performance Optimized**
+- CSS only loads when block is used
+- Minimal JavaScript footprint
+- Efficient server-side rendering
+- No external dependencies
+
+## 🔧 **Usage**
+
+### **In Gutenberg Editor**
+1. Add new block
+2. Search for "Time Greeting" 
+3. Configure in sidebar panel
+4. Preview updates live
+
+### **Shortcode**
 ```php
-// Basic greeting
 [time_greeting]
-
-// Show only date
 [time_greeting display="date"]
-
-// Show both greeting and date
-[time_greeting display="both"]
-
-// Custom timezone
-[time_greeting timezone="America/Chicago" tz_abbr="CT"]
-
-// Custom date format
-[time_greeting display="date" date_format="l, F j, Y"]
+[time_greeting display="both" timezone="America/Chicago" tz_abbr="CT"]
 ```
 
-### Echo Function (for page builders)
-
+### **Page Builders (Bricks, etc.)**
 ```php
-<?php
-// Basic usage
-time_greeting_echo();
-
-// With parameters
-time_greeting_echo(array(
-    'display' => 'both',
-    'timezone' => 'America/Los_Angeles',
-    'tz_abbr' => 'PT'
-));
-?>
+<?php time_greeting_echo(); ?>
 ```
 
-### Gutenberg Block
-
-1. Add new block in editor
-2. Search for "Time Greeting"
-3. Configure options in block sidebar:
-   - Display Type: greeting, date, or both
-   - Date Format: PHP date format string
-   - Timezone: PHP timezone identifier
-   - Timezone Abbreviation: Display abbreviation
-
-## Admin Configuration
-
-Go to **Settings → Time Greeting** to configure:
-
-- **Time Periods**: When morning, afternoon, evening, and night begin (24-hour format)
-- **Night Message**: Custom message for after-hours with `{time}` and `{tz}` placeholders
-- **Default Timezone**: Site default timezone (uses WordPress setting by default)
-- **Default Timezone Abbreviation**: Default abbreviation to display
-
-## WordPress Best Practices Compliance
-
-### Security
-- ✅ Proper nonce verification for admin forms
-- ✅ Input sanitization and validation
-- ✅ Output escaping with `esc_html()`, `esc_attr()`, etc.
-- ✅ Capability checks (`manage_options`)
-- ✅ Direct access prevention
-
-### Coding Standards
-- ✅ WordPress Coding Standards compliant
-- ✅ Proper hook usage
-- ✅ Clean plugin architecture
-- ✅ Proper asset enqueuing
-- ✅ Translation-ready strings
-
-### Accessibility
-- ✅ Semantic HTML with `<time>` elements
-- ✅ Proper `datetime` attributes in ISO format
-- ✅ Screen reader friendly markup
-- ✅ ARIA compliance
-
-### Performance
-- ✅ Efficient database queries
-- ✅ Proper asset loading
-- ✅ Server-side rendering for blocks
-- ✅ Minimal resource usage
-
-## Customization
-
-### Default Greeting Periods
-- **Morning**: 5:00 AM - 11:59 AM
-- **Afternoon**: 12:00 PM - 4:59 PM  
-- **Evening**: 5:00 PM - 9:59 PM
-- **Night**: 10:00 PM - 4:59 AM
-
-### Available Parameters
+### **Custom Parameters**
 - `display`: "greeting", "date", "both"
-- `date_format`: Any PHP date format string
-- `timezone`: PHP timezone identifier
-- `tz_abbr`: Timezone abbreviation for display
+- `date_format`: Any PHP date format (e.g., "F j, Y")
+- `timezone`: PHP timezone identifier (e.g., "America/New_York")
+- `tz_abbr`: Timezone abbreviation (e.g., "ET")
 
-## Requirements
+## ⚙️ **Settings**
 
-- WordPress 5.8+
-- PHP 7.4+
-- Modern browser for Gutenberg block
+Navigate to **Settings > Time Greeting** to configure:
 
-## License
+- **Time Periods**: When morning, afternoon, evening, night begin
+- **Night Message**: Custom message with {time} and {tz} placeholders
+- **Default Timezone**: Site-wide default timezone
+- **Default Timezone Abbreviation**: Default abbreviation
 
-GPL v2 or later
+## 🧹 **Cleanup Behavior**
+
+This plugin is designed to be a "good citizen":
+
+### **On Deactivation:**
+- ✅ Removes all plugin options (`tgb_settings`)
+- ✅ Clears all transient data
+- ✅ Removes any user meta
+- ✅ Removes any post meta
+- ✅ Cancels scheduled events
+- ✅ Clears cached data
+- ✅ No database traces left behind
+
+### **Manual or Automatic:**
+- Works whether plugin is deleted manually or through WordPress
+- Cleanup runs on both deactivation AND uninstall hooks
+- No orphaned data regardless of removal method
+
+## 🎨 **Styling & Themes**
+
+### **CSS Classes:**
+- `.wp-block-time-greeting-block-time-greeting` - Main wrapper
+- `.time-greeting` - Greeting text container
+- `.time-greeting-date` - Date container
+- `.has-text-align-center` - Alignment classes
+
+### **Theme Support:**
+- Inherits theme typography
+- Supports WordPress color palette
+- Responds to theme spacing
+- Dark mode compatible
+- High contrast mode support
+
+## 🔒 **Security Features**
+
+- Input sanitization on all user data
+- Date format validation to prevent code execution
+- Timezone validation against PHP timezone list
+- Proper escaping of all output
+- Nonce protection on settings forms
+
+## 📱 **Accessibility**
+
+- Semantic `<time>` elements with datetime attributes
+- Proper ARIA labels
+- Screen reader friendly
+- Keyboard navigation support
+- High contrast mode compatible
+- Reduced motion respect
+
+## 🌍 **Internationalization**
+
+- Translation ready with `time-greeting-block` text domain
+- All strings wrapped in translation functions
+- Language files directory included
+- RTL language support
+
+## 🐛 **Troubleshooting**
+
+### **Block Doesn't Appear**
+1. Check that all files are in correct directories
+2. Verify `block.json` is in plugin root
+3. Check browser console for JavaScript errors
+
+### **Styles Not Loading**
+1. Ensure CSS files exist in `assets/` directory
+2. Clear any caching plugins
+3. Check file permissions
+
+### **Shortcode Not Working**
+1. Plugin must be activated
+2. Check shortcode spelling: `[time_greeting]`
+3. Verify in theme that supports shortcodes
+
+## 📝 **File Checklist**
+
+Before installing, ensure you have all these files:
+
+- ✅ `time-greeting-block.php` - Main plugin file
+- ✅ `block.json` - Block configuration
+- ✅ `assets/block-editor.js` - Editor JavaScript
+- ✅ `assets/block-editor.css` - Editor styles
+- ✅ `assets/block-style.css` - Frontend styles
+
+## 🔄 **Updates**
+
+To update the plugin:
+1. Deactivate (triggers automatic cleanup)
+2. Replace files with new versions
+3. Reactivate
+
+Your settings will be preserved during updates unless you specifically deactivate first.
+
+---
+
+**Ready to use!** This plugin requires no additional setup, compilation, or build processes.
